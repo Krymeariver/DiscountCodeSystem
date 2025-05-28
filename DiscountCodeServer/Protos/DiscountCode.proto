@@ -2,9 +2,8 @@ syntax = "proto3";
 
 option csharp_namespace = "DiscountCodeSystem.Protos";
 
-package discount;
+package DiscountCodeSystem.Protos;
 
-// Generate Request
 message GenerateRequest {
   uint32 count = 1;
   uint32 length = 2;
@@ -15,7 +14,6 @@ message GenerateResponse {
   bool success = 2;
 }
 
-// Use Code Request
 message UseCodeRequest {
   string code = 1;
 }
@@ -30,7 +28,15 @@ message UseCodeResponse {
   Status result = 1;
 }
 
+message CountUnusedRequest {}
+
+message CountUnusedResponse {
+  uint32 unusedCount = 1;
+}
+
+
 service DiscountService {
   rpc GenerateCodes(GenerateRequest) returns (GenerateResponse);
   rpc UseCode(UseCodeRequest) returns (UseCodeResponse);
+  rpc CountCodesUnused(CountUnusedRequest) returns (CountUnusedResponse); 
 }
