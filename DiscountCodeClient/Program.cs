@@ -13,7 +13,7 @@ while (true)
     switch (choice)
     {
         case "1":
-            Console.Write("How many codes? Max 2000");
+            Console.Write("How many codes? Max 2000 \n");
             var count = ushort.Parse(Console.ReadLine()!);
 
             Console.Write("Code length (7 or 8): ");
