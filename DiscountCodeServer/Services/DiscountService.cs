@@ -33,21 +33,40 @@ public class DiscountServiceImpl : DiscountService.DiscountServiceBase
 
         for (int i = 0; i < request.Count; i++)
         {
-            string code;
-            do
-            {
-                code = new string(Enumerable.Repeat(chars, (int)request.Length)
-                    .Select(s => s[random.Next(s.Length)]).ToArray());
-            }
-            while (_codeCollection.Exists(x => x.Code == code)); // avoid duplicates
+            bool added = false;
+            int attempts = 0;
+            const int maxAttempts = 1000;
 
-            _codeCollection.Insert(new DiscountCode { Code = code, Used = false });
-            response.Codes.Add(code);
+            while (!added)
+            {
+                if (++attempts > maxAttempts)
+                    throw new Exception("Failed to generate a unique code after many attempts. Code space may be saturated.");
+
+                var code = new string(Enumerable.Repeat(chars, (int)request.Length)
+                    .Select(s => s[random.Next(s.Length)]).ToArray());
+
+                try
+                {
+                    _codeCollection.Insert(new DiscountCode
+                    {
+                        Code = code,
+                        Used = false,
+                        CreatedAt = DateTime.UtcNow,
+                        UsedAt = null
+                    });
+
+                    response.Codes.Add(code);
+                    added = true;
+                }
+                catch (LiteDB.LiteException ex) when (ex.Message.Contains("duplicate key")) // Cannot insert duplicate key in unique index '_id'. The duplicate value is '"code"'.
+                {
+                    // Collision — try again
+                }
+            }
         }
 
         return Task.FromResult(response);
     }
-
 
     public override Task<UseCodeResponse> UseCode(UseCodeRequest request, ServerCallContext context)
     {
@@ -85,6 +104,4 @@ public class DiscountServiceImpl : DiscountService.DiscountServiceBase
     {
         _db.Dispose();
     }
-
-
 }

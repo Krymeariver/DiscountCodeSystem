@@ -48,8 +48,7 @@ public class DiscountServiceTests
 
     [Fact]
     public async Task MultipleClients_CanUseCodesInParallel()
-    {
-        // Generate once
+    {        
         var generate = await _client.GenerateCodesAsync(new GenerateRequest { Count = 100, Length = 7 });
         var codes = generate.Codes.ToList();
 
